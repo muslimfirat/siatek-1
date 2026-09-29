@@ -52,4 +52,23 @@ describe('AdminWorkspaceShell profile access', () => {
     expect(html).toContain('Giderler');
     expect(html).toContain('Çek / Senet');
   });
+
+  it('shows Ortak Araç as its own sidebar module', () => {
+    const html = renderToStaticMarkup(
+      <AdminWorkspaceShell
+        activeTab="ortak-arac"
+        onTabChange={vi.fn()}
+        onOpenAI={vi.fn()}
+        onOpenNotifications={vi.fn()}
+        currentUser={admin}
+        onLogout={vi.fn()}
+      >
+        <div>İçerik</div>
+      </AdminWorkspaceShell>,
+    );
+    const sidebar = html.slice(html.indexOf('admin-workspace-sidebar'), html.indexOf('admin-workspace-content'));
+
+    expect(sidebar).toContain('<span>Ortak Araç</span>');
+    expect(sidebar).toMatch(/aria-current="page"[^>]*><svg[^>]*>.*?<\/svg><span>Ortak Araç<\/span>/s);
+  });
 });

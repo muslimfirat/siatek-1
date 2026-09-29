@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useRef, useState } from 'react';
 import {
   BarChart3, Box, FileText, Home,
   Settings, ShoppingCart, Truck, Users, Wallet, Bell, Search, Plus, Sun,
-  UserRound, LogOut,
+  UserRound, LogOut, Handshake,
 } from 'lucide-react';
 import type { AdminTab, User } from '../../types';
 
@@ -28,6 +28,7 @@ const items: Array<{ id: AdminTab; label: string; icon: typeof Home }> = [
   { id: 'products', label: 'Stok Yönetimi', icon: Box },
   { id: 'alis-faturalari', label: 'Satın Alma', icon: ShoppingCart },
   { id: 'analytics', label: 'Raporlar', icon: BarChart3 },
+  { id: 'ortak-arac', label: 'Ortak Araç', icon: Handshake },
   { id: 'ops-dispatch', label: 'Operasyon', icon: Truck },
 ];
 
@@ -35,8 +36,8 @@ const contextualTabs: Array<{ title: string; ids: AdminTab[]; tabs: Array<{ id: 
   { title: 'Satış Yönetimi', ids: ['pos', 'orders', 'quotes', 'cariler'], tabs: [
     { id: 'pos', label: 'POS' }, { id: 'orders', label: 'Siparişler' }, { id: 'quotes', label: 'Teklifler' }, { id: 'cariler', label: 'Cariler' },
   ] },
-  { title: 'Finans Yönetimi', ids: ['kasa', 'invoices', 'gider', 'cek-senet', 'ortak-arac'], tabs: [
-    { id: 'kasa', label: 'Kasa / Banka' }, { id: 'invoices', label: 'Faturalama' }, { id: 'gider', label: 'Giderler' }, { id: 'cek-senet', label: 'Çek / Senet' }, { id: 'ortak-arac', label: 'Ortak Araç' },
+  { title: 'Finans Yönetimi', ids: ['kasa', 'invoices', 'gider', 'cek-senet'], tabs: [
+    { id: 'kasa', label: 'Kasa / Banka' }, { id: 'invoices', label: 'Faturalama' }, { id: 'gider', label: 'Giderler' }, { id: 'cek-senet', label: 'Çek / Senet' }
   ] },
   { title: 'Stok Yönetimi', ids: ['products', 'barcodes'], tabs: [
     { id: 'products', label: 'Ürün & Stok Masası' },

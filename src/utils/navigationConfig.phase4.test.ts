@@ -29,4 +29,11 @@ describe('Faz 4 — UI/UX navigasyon modeli', () => {
       expect.arrayContaining(['alis-faturalari', 'tedarikci-ekstresi'])
     );
   });
+
+  it('ortak araç hesabı finanstan ayrı, kendi kategorisinde durur', () => {
+    const modules = getMoreModulesForRole('admin') as any;
+
+    expect(modules.partner.map((item: any) => item.id)).toEqual(['ortak-arac']);
+    expect(modules.finance.map((item: any) => item.id)).not.toContain('ortak-arac');
+  });
 });

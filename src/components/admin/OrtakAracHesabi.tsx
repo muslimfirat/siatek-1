@@ -40,6 +40,13 @@ const TurRenk: Record<OrtakAracFisTur, string> = {
 
 const num = 'font-mono tabular-nums';
 
+type Gorunum = 'ozet' | 'fisler' | 'cari';
+const GORUNUMLER: Array<{ id: Gorunum; label: string }> = [
+  { id: 'ozet', label: 'Özet' },
+  { id: 'fisler', label: 'Fişler' },
+  { id: 'cari', label: 'Ortak Cari' },
+];
+
 function formatTL(n: number): string {
   return n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
 }
@@ -81,6 +88,7 @@ export default function OrtakAracHesabi() {
   const [basari, setBasari] = useState<string | null>(null);
   const [iptalOnayId, setIptalOnayId] = useState<string | null>(null);
   const [islemHatasi, setIslemHatasi] = useState<string | null>(null);
+  const [gorunum, setGorunum] = useState<Gorunum>('ozet');
 
   useEffect(() => {
     setYukleniyor(true);
@@ -119,6 +127,10 @@ export default function OrtakAracHesabi() {
     () => activeAccountingRows(fisler).filter((f) => f.tarih.startsWith(seciliAy)),
     [fisler, seciliAy],
   );
+  const ortakOdemeleri = useMemo(
+    () => activeAccountingRows(fisler).filter((f) => f.tur === 'ortak_odeme'),
+    [fisler],
+  );
   const giderDagilimi = useMemo(
     () =>
       Object.entries(hesap.expenseByCategory)
@@ -128,6 +140,7 @@ export default function OrtakAracHesabi() {
   );
   const maxGider = giderDagilimi[0]?.toplam || 1;
 
+  const gosterilenFisler = gorunum === 'cari' ? ortakOdemeleri : listeFisler;
   const p = hesap.period;
   const zarar = p.net < 0;
   const bakiye = hesap.partnerBalance;
@@ -263,6 +276,23 @@ export default function OrtakAracHesabi() {
         </div>
       )}
 
+      <div role="tablist" aria-label="Ortak araç görünümü" className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-base-surface-2 border border-border print:hidden">
+        {GORUNUMLER.map((g) => (
+          <button
+            key={g.id}
+            type="button"
+            role="tab"
+            aria-selected={gorunum === g.id}
+            onClick={() => setGorunum(g.id)}
+            className={`min-h-[44px] rounded-lg text-xs font-bold cursor-pointer transition-all active:scale-[0.98] ${
+              gorunum === g.id ? 'bg-base-surface text-text-primary border border-border shadow-2xs' : 'text-text-muted hover:text-text-primary'
+            }`}
+          >
+            {g.label}
+          </button>
+        ))}
+      </div>
+
       {islemHatasi && (
         <div role="alert" className="flex items-center gap-2 px-4 py-3 rounded-xl bg-bg-danger border border-danger-border text-danger-text text-xs font-bold">
           <AlertCircle className="w-4 h-4 shrink-0" />
@@ -293,6 +323,8 @@ export default function OrtakAracHesabi() {
         </div>
       ) : (
         <>
+          {gorunum === 'ozet' && (
+            <>
           {/* Özet */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
@@ -310,7 +342,7 @@ export default function OrtakAracHesabi() {
           </div>
 
           {/* Paylaşım + cari */}
-          <div className="grid lg:grid-cols-2 gap-3">
+          <div className="grid gap-3">
             <div className="p-4 rounded-2xl border border-border bg-base-surface space-y-3">
               <h3 className="text-xs font-bold text-text-primary flex items-center gap-2">
                 <Handshake className="w-3.5 h-3.5 text-text-muted" />
@@ -328,21 +360,16 @@ export default function OrtakAracHesabi() {
               </div>
               {zarar && <p className="text-[11px] text-warning-text">Bu dönem zarar var; zarar da yarı yarıya paylaşılır.</p>}
             </div>
-
-            <div
-              className={`p-4 rounded-2xl border space-y-1 ${
-                bakiye > 0 ? 'bg-bg-warning/30 border-warning-border/50' : bakiye < 0 ? 'bg-bg-info/30 border-info-border/50' : 'bg-bg-success/20 border-success-border/40'
-              }`}
+            <button
+              type="button"
+              onClick={() => setGorunum('cari')}
+              className="w-full min-h-[44px] flex items-center justify-between gap-3 px-4 rounded-2xl border border-border bg-base-surface text-left cursor-pointer active:scale-[0.99] transition-all"
             >
-              <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Ortak cari (tüm zamanlar)</p>
-              <p className={`text-xl font-black ${num} text-text-primary`}>{formatTL(Math.abs(bakiye))}</p>
-              <p className="text-xs font-semibold text-text-secondary">
-                {bakiye > 0 ? 'Ortağa borcumuz var' : bakiye < 0 ? 'Ortak bize borçlu' : 'Hesap kapalı, borç yok'}
-              </p>
-              <p className="text-[10px] text-text-muted">
-                Tahsilatın bizde olduğu varsayılır. Ortağa yapılan ödemeleri “Ortak Ödemesi” fişiyle girin.
-              </p>
-            </div>
+              <span className="text-xs font-bold text-text-secondary">Ortak cari</span>
+              <span className={`text-xs font-black ${num} text-text-primary`}>
+                {formatTL(Math.abs(bakiye))} · {bakiye > 0 ? 'ortağa borcumuz var' : bakiye < 0 ? 'ortak bize borçlu' : 'hesap kapalı'}
+              </span>
+            </button>
           </div>
 
           {/* Gider dağılımı */}
@@ -363,13 +390,59 @@ export default function OrtakAracHesabi() {
             </div>
           )}
 
+            </>
+          )}
+
+          {gorunum === 'cari' && (
+            <>
+          <div className="grid lg:grid-cols-2 gap-3">
+            <div
+              className={`p-4 rounded-2xl border space-y-1 ${
+                bakiye > 0 ? 'bg-bg-warning/30 border-warning-border/50' : bakiye < 0 ? 'bg-bg-info/30 border-info-border/50' : 'bg-bg-success/20 border-success-border/40'
+              }`}
+            >
+              <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Ortak cari (tüm zamanlar)</p>
+              <p className={`text-xl font-black ${num} text-text-primary`}>{formatTL(Math.abs(bakiye))}</p>
+              <p className="text-xs font-semibold text-text-secondary">
+                {bakiye > 0 ? 'Ortağa borcumuz var' : bakiye < 0 ? 'Ortak bize borçlu' : 'Hesap kapalı, borç yok'}
+              </p>
+              <p className="text-[10px] text-text-muted">
+                Tahsilatın bizde olduğu varsayılır. Ortağa yapılan ödemeleri “Ortak Ödemesi” fişiyle girin.
+              </p>
+            </div>
+            <div className="p-4 rounded-2xl border border-border bg-base-surface space-y-2">
+              <h3 className="text-xs font-bold text-text-primary flex items-center gap-2">
+                <Handshake className="w-3.5 h-3.5 text-text-muted" />
+                Hesap dökümü (tüm zamanlar)
+              </h3>
+              {[
+                ['Ortağın toplam payı', hesap.allTime.partnerShare],
+                ['Ortağa net ödenen', hesap.paidToPartner],
+              ].map(([l, v]) => (
+                <div key={l as string} className="flex items-center justify-between text-xs">
+                  <span className="text-text-secondary font-semibold">{l as string}</span>
+                  <span className={`font-bold text-text-primary ${num}`}>{formatTL(v as number)}</span>
+                </div>
+              ))}
+              <div className="flex items-center justify-between text-xs pt-2 border-t border-border">
+                <span className="text-text-primary font-bold">Kalan</span>
+                <span className={`font-black text-text-primary ${num}`}>{formatTL(bakiye)}</span>
+              </div>
+            </div>
+          </div>
+
+            </>
+          )}
+
+          {gorunum !== 'ozet' && (
+            <>
           {/* Fiş listesi */}
           <div className="bg-base-surface rounded-2xl border border-border shadow-xs overflow-hidden">
-            {listeFisler.length === 0 ? (
+            {gosterilenFisler.length === 0 ? (
               <div className="p-8 text-center space-y-3">
                 <Receipt className="w-10 h-10 text-text-muted mx-auto" />
-                <p className="text-sm font-semibold text-text-primary">{ayEtiketi(seciliAy)} için fiş yok</p>
-                <p className="text-xs text-text-muted">Satış, gider ya da ortak ödemesi fişi ekleyin; hesap otomatik oluşur.</p>
+                <p className="text-sm font-semibold text-text-primary">{gorunum === 'cari' ? 'Henüz ortak ödemesi yok' : `${ayEtiketi(seciliAy)} için fiş yok`}</p>
+                <p className="text-xs text-text-muted">{gorunum === 'cari' ? 'Ortağa yaptığınız ödemeleri ya da aldığınız avansları fişle girin.' : 'Satış, gider ya da ortak ödemesi fişi ekleyin; hesap otomatik oluşur.'}</p>
                 <button
                   onClick={yeniAc}
                   className="min-h-[44px] px-4 rounded-xl bg-success-fill text-white text-xs font-bold cursor-pointer hover:opacity-90 active:scale-[0.98]"
@@ -379,7 +452,7 @@ export default function OrtakAracHesabi() {
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {listeFisler.map((f) => {
+                {gosterilenFisler.map((f) => {
                   const kar = f.tur === 'satis' ? roundMoney(f.tutar - Number(f.malMaliyeti || 0)) : null;
                   return (
                     <div key={f.id} className="flex items-center gap-3 px-4 py-3 hover:bg-base-surface-2/40 transition-colors">
@@ -435,6 +508,8 @@ export default function OrtakAracHesabi() {
               </div>
             )}
           </div>
+            </>
+          )}
         </>
       )}
 

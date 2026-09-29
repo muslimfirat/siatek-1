@@ -1555,11 +1555,6 @@ export default function AdminPortal({
               <Banknote className={`w-3.5 h-3.5 shrink-0 ${(activeTab as string) === 'cek-senet' ? 'text-info-text' : 'text-text-muted'}`} />
               Çek / Senet
             </button>
-            <button id="tab-admin-ortak-arac" onClick={() => setActiveTab('ortak-arac')}
-              className={`w-full flex items-center gap-2 px-2.5 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all cursor-pointer border ${(activeTab as string) === 'ortak-arac' ? 'bg-success-fill/15 text-success-text border-success-border' : 'bg-base-surface hover:bg-base-surface-2 text-text-secondary hover:text-text-primary border-border/40'}`}>
-              <Truck className={`w-3.5 h-3.5 shrink-0 ${(activeTab as string) === 'ortak-arac' ? 'text-success-text' : 'text-text-muted'}`} />
-              Ortak Araç
-            </button>
             <button id="tab-admin-kasa" onClick={() => setActiveTab('kasa')}
               className={`w-full flex items-center gap-2 px-2.5 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all cursor-pointer border ${(activeTab as string) === 'kasa' ? 'bg-success-fill/15 text-success-text border-success-border' : 'bg-base-surface hover:bg-base-surface-2 text-text-secondary hover:text-text-primary border-border/40'}`}>
               <Wallet className={`w-3.5 h-3.5 shrink-0 ${(activeTab as string) === 'kasa' ? 'text-success-text' : 'text-text-muted'}`} />

@@ -48,6 +48,7 @@ export default function MoreModulesView({
         const categoryTitles: Record<string, string> = {
           sales: 'Satış ve Müşteri',
           finance: 'Finans ve Ödeme',
+          partner: 'Ortak Araç',
           reports: 'Raporlar',
           purchasing: 'Satın Alma',
           operations: 'Stok ve Operasyon',
