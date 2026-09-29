@@ -97,6 +97,7 @@ import GiderTakipDashboard from './GiderTakipDashboard';
 import CekSenetDashboard from './CekSenetDashboard';
 import KasaDefteri from './KasaDefteri';
 import KarZararRaporu from './KarZararRaporu';
+import OrtakAracHesabi from './OrtakAracHesabi';
 import KdvOzetRaporu from './KdvOzetRaporu';
 import UrunKarMarjiRaporu from './UrunKarMarjiRaporu';
 import EInvoiceDashboard from './EInvoiceDashboard';
@@ -1553,6 +1554,11 @@ export default function AdminPortal({
               className={`w-full flex items-center gap-2 px-2.5 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all cursor-pointer border ${(activeTab as string) === 'cek-senet' ? 'bg-info-fill/15 text-info-text border-info-border' : 'bg-base-surface hover:bg-base-surface-2 text-text-secondary hover:text-text-primary border-border/40'}`}>
               <Banknote className={`w-3.5 h-3.5 shrink-0 ${(activeTab as string) === 'cek-senet' ? 'text-info-text' : 'text-text-muted'}`} />
               Çek / Senet
+            </button>
+            <button id="tab-admin-ortak-arac" onClick={() => setActiveTab('ortak-arac')}
+              className={`w-full flex items-center gap-2 px-2.5 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all cursor-pointer border ${(activeTab as string) === 'ortak-arac' ? 'bg-success-fill/15 text-success-text border-success-border' : 'bg-base-surface hover:bg-base-surface-2 text-text-secondary hover:text-text-primary border-border/40'}`}>
+              <Truck className={`w-3.5 h-3.5 shrink-0 ${(activeTab as string) === 'ortak-arac' ? 'text-success-text' : 'text-text-muted'}`} />
+              Ortak Araç
             </button>
             <button id="tab-admin-kasa" onClick={() => setActiveTab('kasa')}
               className={`w-full flex items-center gap-2 px-2.5 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all cursor-pointer border ${(activeTab as string) === 'kasa' ? 'bg-success-fill/15 text-success-text border-success-border' : 'bg-base-surface hover:bg-base-surface-2 text-text-secondary hover:text-text-primary border-border/40'}`}>
@@ -3067,6 +3073,11 @@ export default function AdminPortal({
         <div className="finance-surface">
           <KasaDefteri />
         </div>
+      )}
+
+      {/* ORTAK ARAÇ HESABI */}
+      {(activeTab as string) === 'ortak-arac' && (
+        <OrtakAracHesabi />
       )}
 
       {/* RAPOR: KÂR / ZARAR */}

@@ -28,6 +28,7 @@ import {
   CekSenet,
   KasaHareketi,
   GiderKaydi,
+  OrtakAracFis,
   AlisFaturasi,
   Tedarikci,
   TedarikciIslem,
@@ -816,6 +817,39 @@ export function subscribeToGiderKayitlari(callback: (list: GiderKaydi[]) => void
       callback(list);
     },
     err => { console.error('[SIATEK] gider_kayitlari:', err.code); callback([]); }
+  );
+}
+
+/* ==========================================================================
+ *  ORTAK ARAÇ HESABI (tek araç / tek ortak)
+ * ========================================================================== */
+
+export async function saveOrtakAracFisToFirestore(data: OrtakAracFis): Promise<void> {
+  const ref = data.id ? doc(db, 'ortak_arac_fisleri', data.id) : doc(collection(db, 'ortak_arac_fisleri'));
+  await setDoc(ref, { ...data, id: ref.id, status: 'active', updatedAt: new Date().toISOString() });
+}
+
+export async function updateOrtakAracFisInFirestore(id: string, data: Partial<OrtakAracFis>): Promise<void> {
+  await updateDoc(doc(db, 'ortak_arac_fisleri', id), { ...data, updatedAt: new Date().toISOString() });
+}
+
+/** Silme yerine iptal: kayıt izi korunur, hesaptan düşer. */
+export async function voidOrtakAracFisInFirestore(id: string): Promise<void> {
+  await updateDoc(doc(db, 'ortak_arac_fisleri', id), {
+    status: 'void',
+    reversedById: `VOID-${Date.now()}`,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+export function subscribeToOrtakAracFisleri(
+  callback: (list: OrtakAracFis[]) => void,
+  onError?: (err: unknown) => void,
+): () => void {
+  const q = query(collection(db, 'ortak_arac_fisleri'), orderBy('tarih', 'desc'));
+  return onSnapshot(q,
+    snap => callback(snap.docs.map(d => d.data() as OrtakAracFis)),
+    err => { console.error('[SIATEK] ortak_arac_fisleri:', err.code); onError?.(err); }
   );
 }
 

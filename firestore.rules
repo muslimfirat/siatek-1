@@ -259,6 +259,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // ---------------- ortak arac fisleri ----------------
+    match /ortak_arac_fisleri/{docId} {
+      allow read, write: if isAdmin();
+    }
+
     // ---------------- alis faturalari ----------------
     match /alis_faturalari/{docId} {
       allow read, write: if isAdmin();

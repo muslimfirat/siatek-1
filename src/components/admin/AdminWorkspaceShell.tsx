@@ -35,8 +35,8 @@ const contextualTabs: Array<{ title: string; ids: AdminTab[]; tabs: Array<{ id: 
   { title: 'Satış Yönetimi', ids: ['pos', 'orders', 'quotes', 'cariler'], tabs: [
     { id: 'pos', label: 'POS' }, { id: 'orders', label: 'Siparişler' }, { id: 'quotes', label: 'Teklifler' }, { id: 'cariler', label: 'Cariler' },
   ] },
-  { title: 'Finans Yönetimi', ids: ['kasa', 'invoices', 'gider', 'cek-senet'], tabs: [
-    { id: 'kasa', label: 'Kasa / Banka' }, { id: 'invoices', label: 'Faturalama' }, { id: 'gider', label: 'Giderler' }, { id: 'cek-senet', label: 'Çek / Senet' },
+  { title: 'Finans Yönetimi', ids: ['kasa', 'invoices', 'gider', 'cek-senet', 'ortak-arac'], tabs: [
+    { id: 'kasa', label: 'Kasa / Banka' }, { id: 'invoices', label: 'Faturalama' }, { id: 'gider', label: 'Giderler' }, { id: 'cek-senet', label: 'Çek / Senet' }, { id: 'ortak-arac', label: 'Ortak Araç' },
   ] },
   { title: 'Stok Yönetimi', ids: ['products', 'barcodes'], tabs: [
     { id: 'products', label: 'Ürün & Stok Masası' },

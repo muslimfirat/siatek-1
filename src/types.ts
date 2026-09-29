@@ -88,6 +88,7 @@ export const ADMIN_TABS = [
   'analytics', 'gider', 'cek-senet', 'kasa', 'alis-faturalari',
   'tedarikci-ekstresi', 'kar-zarar', 'kdv-ozet', 'urun-kar',
   'ops-dispatch', 'ops-drivers', 'ops-sales', 'ops-wms', 'ops-delivery',
+  'ortak-arac',
   'settings',
 ] as const;
 export type AdminTab = typeof ADMIN_TABS[number];
@@ -785,6 +786,41 @@ export interface GiderKaydi {
   tarih: string;
   odemeTarihi?: string;
   odendi: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ==========================================
+// ORTAK ARAÇ HESABI (tek araç / tek ortak, ayrı defter)
+// ==========================================
+export type OrtakAracFisTur = 'satis' | 'gider' | 'ortak_odeme';
+
+export type OrtakAracGiderKategori =
+  | 'sofor_maas'
+  | 'yakit'
+  | 'yemek'
+  | 'vergi_harc'
+  | 'bakim_onarim'
+  | 'sigorta'
+  | 'diger';
+
+/** ortaga_odedik: ortağa para verdik / ortaktan_aldik: ortaktan avans aldık. */
+export type OrtakAracOdemeYonu = 'ortaga_odedik' | 'ortaktan_aldik';
+
+export interface OrtakAracFis {
+  id: string;
+  tur: OrtakAracFisTur;
+  /** Satış: satış tutarı · Gider: gider tutarı · Ortak ödeme: ödeme tutarı. */
+  tutar: number;
+  /** Yalnızca satış fişi: satılan malın bize maliyeti. */
+  malMaliyeti?: number;
+  giderKategori?: OrtakAracGiderKategori;
+  odemeYonu?: OrtakAracOdemeYonu;
+  aciklama: string;
+  fisNo?: string;
+  tarih: string;
+  status?: 'active' | 'void';
+  reversedById?: string;
   createdAt: string;
   updatedAt: string;
 }

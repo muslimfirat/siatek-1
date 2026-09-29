@@ -1,4 +1,4 @@
-import type { AlisFaturasi, GiderKaydi, KasaHareket, KasaHareketi, Order } from '../types';
+import type { AlisFaturasi, GiderKaydi, KasaHareket, KasaHareketi, Order, OrtakAracFis } from '../types';
 
 const ROUND = 100;
 
@@ -132,5 +132,54 @@ export function calculateProfitLoss(input: {
     marginPercent: revenue > 0 ? (profit / revenue) * 100 : 0,
     salesCount: sales.length,
     expenseCount: expenses.length + purchaseInvoices.length,
+  };
+}
+
+/** Ortak araç hesabında ortağın sabit pay oranı (yarı yarıya). */
+export const ORTAK_ARAC_ORTAK_PAY_ORANI = 0.5;
+
+/**
+ * Ortak araç hesabı: net = satışlar − mal maliyeti − tüm araç giderleri.
+ * Kâr da zarar da eşit paylaşılır. Dönem özeti `period` (YYYY-MM) içindir;
+ * cari bakiye ise tüm zamanların net payı ile ortak ödemelerinin farkıdır.
+ */
+export function calculateOrtakAracHesap(fisler: OrtakAracFis[], period: string) {
+  const active = activeAccountingRows(fisler);
+  const inPeriod = active.filter((f) => (f.tarih || '').startsWith(period));
+
+  const summarize = (rows: OrtakAracFis[]) => {
+    const revenue = roundMoney(rows.filter((f) => f.tur === 'satis').reduce((s, f) => s + Number(f.tutar || 0), 0));
+    const goodsCost = roundMoney(rows.filter((f) => f.tur === 'satis').reduce((s, f) => s + Number(f.malMaliyeti || 0), 0));
+    const expenses = roundMoney(rows.filter((f) => f.tur === 'gider').reduce((s, f) => s + Number(f.tutar || 0), 0));
+    const net = roundMoney(revenue - goodsCost - expenses);
+    const partnerShare = roundMoney(net * ORTAK_ARAC_ORTAK_PAY_ORANI);
+    const ourShare = roundMoney(net - partnerShare);
+    return { revenue, goodsCost, expenses, net, partnerShare, ourShare };
+  };
+
+  const expenseByCategory: Record<string, number> = {};
+  for (const f of inPeriod) {
+    if (f.tur !== 'gider') continue;
+    const key = f.giderKategori || 'diger';
+    expenseByCategory[key] = roundMoney((expenseByCategory[key] || 0) + Number(f.tutar || 0));
+  }
+
+  const allTime = summarize(active);
+  const paidToPartner = roundMoney(
+    active.filter((f) => f.tur === 'ortak_odeme').reduce(
+      (s, f) => s + (f.odemeYonu === 'ortaktan_aldik' ? -1 : 1) * Number(f.tutar || 0),
+      0,
+    ),
+  );
+  /** Pozitif: ortağa borcumuz var · negatif: ortak bize borçlu. */
+  const partnerBalance = roundMoney(allTime.partnerShare - paidToPartner);
+
+  return {
+    period: summarize(inPeriod),
+    expenseByCategory,
+    receiptCount: inPeriod.length,
+    allTime,
+    paidToPartner,
+    partnerBalance,
   };
 }

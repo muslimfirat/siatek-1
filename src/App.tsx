@@ -759,7 +759,7 @@ export default function App() {
               if (modKey === 'quotes') {
                 if (currentRole === 'admin') setAdminTab('quotes');
                 else setCustomerTab('quotes');
-              } else if (['cariler', 'invoices', 'analytics', 'diagnostics', 'errors', 'gider', 'cek-senet', 'kasa', 'alis-faturalari', 'tedarikci-ekstresi', 'kar-zarar', 'kdv-ozet', 'urun-kar'].includes(modKey)) {
+              } else if (['cariler', 'invoices', 'analytics', 'diagnostics', 'errors', 'gider', 'cek-senet', 'kasa', 'alis-faturalari', 'tedarikci-ekstresi', 'kar-zarar', 'kdv-ozet', 'urun-kar', 'ortak-arac'].includes(modKey)) {
                 // GUVENLIK: rol yalnizca GERCEKTEN admin olan hesapta degisir.
                 // Eskiden burada kontrolsuz setCurrentRole('admin') vardi;
                 // herhangi bir bayi bu menuden yonetici arayuzune geciyordu.

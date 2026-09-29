@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { calculateProfitLoss, calculateVatSummary, createAlisFaturaReversal, createKasaReversal } from './financeEngine';
-import type { AlisFaturasi, GiderKaydi, KasaHareketi, Order } from '../types';
+import { calculateOrtakAracHesap, calculateProfitLoss, calculateVatSummary, createAlisFaturaReversal, createKasaReversal } from './financeEngine';
+import type { AlisFaturasi, GiderKaydi, KasaHareketi, Order, OrtakAracFis } from '../types';
 
 describe('Faz 3 — Ön muhasebe motoru', () => {
   it('KDV raporu gider ve alış faturasını belge durumuna göre toplar', () => {
@@ -81,5 +81,54 @@ describe('Faz 3 — Ön muhasebe motoru', () => {
     expect(reversal.durum).toBe('iptal');
     expect(reversal.genelToplam).toBe(-240);
     expect(reversal.kalemler[0].miktar).toBe(-2);
+  });
+});
+
+describe('Ortak araç hesabı (11 ACH 644, %50)', () => {
+  const fis = (o: Partial<OrtakAracFis>) => ({ id: Math.random().toString(), aciklama: '', createdAt: '', updatedAt: '', tarih: '2026-09-05', tutar: 0, tur: 'satis', ...o }) as OrtakAracFis;
+
+  it('net = satış − mal maliyeti − tüm giderler, yarı yarıya bölünür', () => {
+    const r = calculateOrtakAracHesap([
+      fis({ tur: 'satis', tutar: 10000, malMaliyeti: 6000 }),
+      fis({ tur: 'gider', tutar: 800, giderKategori: 'yakit' }),
+      fis({ tur: 'gider', tutar: 1200, giderKategori: 'sofor_maas' }),
+      fis({ tur: 'gider', tutar: 200, giderKategori: 'yemek' }),
+    ], '2026-09');
+    expect(r.period.net).toBe(1800);
+    expect(r.period.partnerShare).toBe(900);
+    expect(r.period.ourShare).toBe(900);
+    expect(r.expenseByCategory).toEqual({ yakit: 800, sofor_maas: 1200, yemek: 200 });
+  });
+
+  it('zarar da eşit paylaşılır ve tek kuruş kaybolmaz', () => {
+    const r = calculateOrtakAracHesap([
+      fis({ tur: 'satis', tutar: 100, malMaliyeti: 60 }),
+      fis({ tur: 'gider', tutar: 141.01, giderKategori: 'bakim_onarim' }),
+    ], '2026-09');
+    expect(r.period.net).toBe(-101.01);
+    expect(r.period.partnerShare + r.period.ourShare).toBeCloseTo(r.period.net, 2);
+    expect(r.period.partnerShare).toBe(-50.5);
+    expect(r.period.ourShare).toBe(-50.51);
+  });
+
+  it('iptal fişleri ve başka dönemler dönem özetini etkilemez', () => {
+    const r = calculateOrtakAracHesap([
+      fis({ tur: 'satis', tutar: 500, malMaliyeti: 300 }),
+      fis({ tur: 'satis', tutar: 9999, status: 'void', reversedById: 'V1' }),
+      fis({ tur: 'satis', tutar: 700, malMaliyeti: 0, tarih: '2026-08-30' }),
+    ], '2026-09');
+    expect(r.period.revenue).toBe(500);
+    expect(r.allTime.revenue).toBe(1200);
+  });
+
+  it('cari bakiye: ortağın payı − ortağa net ödemeler (tüm zamanlar)', () => {
+    const r = calculateOrtakAracHesap([
+      fis({ tur: 'satis', tutar: 4000, malMaliyeti: 2000 }),
+      fis({ tur: 'ortak_odeme', tutar: 600, odemeYonu: 'ortaga_odedik' }),
+      fis({ tur: 'ortak_odeme', tutar: 100, odemeYonu: 'ortaktan_aldik', tarih: '2026-08-01' }),
+    ], '2026-09');
+    expect(r.allTime.partnerShare).toBe(1000);
+    expect(r.paidToPartner).toBe(500);
+    expect(r.partnerBalance).toBe(500);
   });
 });
